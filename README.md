@@ -25,6 +25,11 @@ mkdir norm/
 
 Now use the wikiextractor to store the output as compressed bz files in the norm/ folder. Splitting into multiple files is recommended so that you can use multiple cores for the following step:
 
+```
+cd wikiextractor
+python3 WikiExtractor.py -o ../norm/ --processes 28 --filter_disambig_pages --min_text_length 0 --compress --templates ../templates.de.wiki ../dewiki-20200520-pages-articles-multistream.xml.bz2
+```
+
 Then use convert_wiki_norm.sh to normalize these files in parallel. This will remove punctuation and translates numerals into text form ("42" -> zwei und vierzig), expands abbreviations and does other normalizations specific to wiki texts. This step needs the spacy library with the German spacy model downloaded and installed.
 
 ```
