@@ -24,20 +24,24 @@ git clone https://github.com/attardi/wikiextractor
 mkdir wikiextractor_output/
 mkdir norm/
 
-Now use the wikiextractor to store the output as compressed bz files in the norm/ folder. Splitting into multiple files is recommended so that you can use multiple cores for the following step, in the example we use 28 processes:
+Now use the wikiextractor to store the output as compressed bz files in the norm/ folder. Splitting into multiple files is recommended so that you can use multiple cores for the following step, use the --bytes flag to set a filesize for the output. Also in the example we use 28 processes:
 
 ```
 cd wikiextractor
-python3 WikiExtractor.py -o ../wikiextractor_output/ --processes 28 --filter_disambig_pages --min_text_length 0 --compress --templates ../templates.de.wiki ../dewiki-20200520-pages-articles-multistream.xml.bz2
+python3 WikiExtractor.py -o ../wikiextractor_output/ --processes 28 --filter_disambig_pages --min_text_length 0 --compress --bytes 64M --ignored_tags abbr,b,big --no_templates ../dewiki-20200520-pages-articles-multistream.xml.bz2
 ```
 
-Then use convert_wiki_norm.sh to normalize these files in parallel. This will remove punctuation and translates numerals into text form ("42" -> zwei und vierzig), expands abbreviations and do other normalizations specific to wiki texts. This step needs the spacy Python library with the German spacy model downloaded and installed.
+Then use convert_wiki_norm.sh to normalize these files in parallel (check that the number of output file matches the number in the script). This step will remove punctuation and translates numerals into text form ("42" -> zwei und vierzig), expands abbreviations and do other normalizations specific to wiki texts. This step needs the spacy Python library with the German spacy model downloaded and installed.
 
 ```
 ./convert_wiki_norm.sh
 ```
 
-This will put the normalized files in the norm/ folder.
+This will put the normalized files in the norm/ folder. You can then simply concatenate all files to a single file with 
+
+```
+cat norm/*.txt > de_wiki
+```
 
 # Crawling taggesschau news
 
@@ -60,6 +64,9 @@ Now filter some utterances that are not needed in LM modelling with a reverse gr
 grep -v "^Stand: " tagesschau_news_may19_may20.txt | grep -v "^Quelle:" > tagesschau_news_may19_may20_filt.txt
 ```
 
+```
+bzip2 tagesschau_news_may19_may20_filt.txt
+```
 TODO: normalize these sentences
 
 # Crawling Mediathek subtitles
@@ -100,6 +107,33 @@ Since the above takes a long time to finish, you can also use the unix tool "spl
 
 This will take the "raw_subs_norm_text" as input file and output the filtered text into "subs_norm1"
 
+# Normalized Europarl
+
+```
+wget https://www.statmt.org/europarl/v7/de-en.tgz
+tar xvfz de-en.tgz
+```
+
+Split the files for parallel processing:
+
+```
+mkdir europarl_split
+split -l 100000 europarl-v7.de-en.de europarl_split/e_
+mkdir -p europarl_norm/europarl_split
+```
+
+Now run the normalization:
+
+```
+./convert_europarl_norm.sh
+```
+
+And copy the output into a single file:
+
+```
+cat europarl_norm/europarl_split/* > europarl_norm
+```
+
 # Create the vocabulary file
 
 Now we use the statistics script to create the vocabulary file. Edit the variable "file"s and "output_voc" of statistics.py to suit your needs. This will generate a sorted vocabulary file with the top most used words at the top along with their frequency:
@@ -122,7 +156,7 @@ mit 10286659
 To generate a vocabulary file for Kaldi you can use the bash programs cut and head:
 
 ```
-cut -d" " -f 1 ../lm_wiki_and_tv/new_complete_voc.txt | head -n 600000 > 
+cut -d" " -f 1 ../lm_wiki_and_tv/new_complete_voc.txt | head -n 600000 > voc_600k.txt 
 ```
 
 # Final filtering of mediathek subs
@@ -142,3 +176,16 @@ python3 final_subs_filter.py
 ```
 
 This will create the "subs_norm1_filt" output file.
+
+# Size of all cleaned sentences
+
+Currently (May 2020) we have gathered about 102 million cleaned German sentences in total with the above method:
+
+```
+wc subs_norm1_filt de_wiki europarl tagesschau_news
+  51410053  455188544 2881248575 subs_norm1_filt
+  48876923  801712134 5772118925 de_wiki
+   1873122   43538807  316189253 europarl
+    368584    5425504   38867347 tagesschau_news
+ 102528682 1305864989 9008424100 total
+```
