@@ -4,7 +4,7 @@ voc = defaultdict(int)
 linenum = 0
 
 output_voc = "voc_subs.txt"
-files = ["subs_norm1_filt", "de_wiki"] #,"subs_norm1"]
+files = ["subs_norm1_filt", "de_wiki", "europarl", "tagesschau_news"] #,"subs_norm1"]
 #num_range = 45
 
 #files = ["train_text.txt"]
