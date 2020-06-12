@@ -45,6 +45,8 @@ cat norm/*.txt > de_wiki
 
 # Crawling taggesschau news
 
+First, configure output_file and compteted_dates_file in get_texts_taggesschau.py
+
 ```
 output_file = 'tagesschau_news_may19_may20.txt'
 compteted_dates_file = 'tagesschau_news_may19_may20_completed.log'
@@ -64,10 +66,14 @@ Now filter some utterances that are not needed in LM modelling with a reverse gr
 grep -v "^Stand: " tagesschau_news_may19_may20.txt | grep -v "^Quelle:" > tagesschau_news_may19_may20_filt.txt
 ```
 
+You can now use the wikipedia cleanup script on the Tagesschau news data as well (it only takes compressed bzip2 as input, so compress with bzip2 first):
+
 ```
 bzip2 tagesschau_news_may19_may20_filt.txt
+python3 normalize_wiki_sentences.py tagesschau_news_may19_may20_filt.txt.bz2 tagesschau_news
 ```
-TODO: normalize these sentences
+
+You now have the cleaned tagesschau_news text for LM training, with news from the past 365 days.
 
 # Crawling Mediathek subtitles
 
