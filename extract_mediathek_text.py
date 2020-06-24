@@ -5,17 +5,19 @@ from bs4 import BeautifulSoup
 def extract_from_xmlfile(filename, filename_out):
     with open(filename) as infile:
         text = infile.read()
-    
+
     if text.startswith('<!DOCTYPE html>'):
         print(filename,'is a html file.')
         print('Ignore', filename, 'move to removed/')
-        shutil.move(filename, 'removed/' + filename)
+        if not os.path.exists('removed/'):
+                os.makedirs('removed/')
+        shutil.move(filename, 'removed/' + os.path.basename(filename))
         return
 
     print('Parsing:', filename)
-        
+
     soup = BeautifulSoup(text, features='lxml')
-    
+
     with open(filename_out, 'a') as out_file:
         for elem in soup.findAll('tt:p'):
             span_text = ''
@@ -27,7 +29,7 @@ def extract_from_xmlfile(filename, filename_out):
             if not span_text.lower().startswith('copyright'):
                 if not span_text.lower().startswith('live-untertitelung'):
                     if not span_text.lower().startswith('untertitel:'):
-                        if not span_text == '.' and not span_text == '': 
+                        if not span_text == '.' and not span_text == '':
                             out_file.write(span_text.strip() + '\n')
 
 filename_out = 'raw_text_subs3'
@@ -36,7 +38,7 @@ mediathek_subs = 'mediathek_subs/'
 if os.path.isfile(filename_out):
     print('Exiting, file', filename_out, 'already exists!')
 else:
-    files = [f for f in os.listdir(mediathek_subs) if os.path.isfile(f)]
+    files = [os.path.join(mediathek_subs,f) for f in os.listdir(mediathek_subs) if os.path.isfile(os.path.join(mediathek_subs,f))]
     for f in files:
         last_f = f.split('/')[-1]
         if last_f.isnumeric():
