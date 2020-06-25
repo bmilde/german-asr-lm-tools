@@ -142,7 +142,13 @@ cat europarl_norm/europarl_split/* > europarl_norm
 
 # Create the vocabulary file
 
-Now we use the statistics script to create the vocabulary file. Edit the variable "file"s and "output_voc" of statistics.py to suit your needs. This will generate a sorted vocabulary file with the top most used words at the top along with their frequency:
+Now we use the statistics script to create the vocabulary file. Edit the variable "file"s and "output_voc" of statistics.py to suit your needs. Then run:
+
+```
+python3 statistics.py
+```
+
+This will generate a sorted vocabulary file with the top most used words at the top along with their frequency:
 
 ```
 und 41327933
@@ -162,7 +168,7 @@ mit 10286659
 To generate a vocabulary file for Kaldi you can use the bash programs cut and head:
 
 ```
-cut -d" " -f 1 ../lm_wiki_and_tv/new_complete_voc.txt | head -n 600000 > voc_600k.txt 
+cut -d" " -f 1 complete_voc.txt | head -n 600000 > voc_600k.txt 
 ```
 
 # Final filtering of mediathek subs
