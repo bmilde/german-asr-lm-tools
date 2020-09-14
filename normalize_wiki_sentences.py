@@ -25,7 +25,7 @@ import normalisierung
 nlp = spacy.load('de')
 
 disable_pipeline = False
-filter_exlude_zeichen = True
+filter_exclude_zeichen = True
 filter_satzzeichen = True
 resplit_whitespace = True
 
@@ -43,7 +43,9 @@ min_token_len = 1
 
 satzzeichen = ',.?!:;<>()/\{}#"\'´`‚’‘_→[]-~«»'
 
-exlude_zeichen = '*/=→[]."'
+exclude_zeichen = '*/=→[]."'
+
+exclude_sonstiges = ('\textit', '\t','\xa0', '\small', '\sharp', '\markup', '\concat', '\flat', '\override', '\translate', '\set', '\new')
 
 sen_num = 0
 lines_dropped = 0
@@ -62,8 +64,8 @@ with bzopen(filename) as bzin, open(filename_out, 'w') as txt_out:
             except:
                 text = line
 
-            text = text.replace('\t',' ')
-            text = text.replace('\xa0',' ')
+            for a in exclude_sonstiges:
+                text = text.replace(a, ' ')
 
             if resplit_whitespace:
                 text = ' '.join(text.split())
@@ -120,7 +122,7 @@ with bzopen(filename) as bzin, open(filename_out, 'w') as txt_out:
 
                 rejoined_text = ' '.join(tokens).strip()
 
-                if filter_exlude_zeichen and any(character in exlude_zeichen for character in rejoined_text):
+                if filter_exclude_zeichen and any(character in exclude_zeichen for character in rejoined_text):
                     lines_dropped += 1
                     continue
 
