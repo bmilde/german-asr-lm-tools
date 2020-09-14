@@ -5,39 +5,42 @@ This repository contains a couple of Python scripts that you can use to build re
 Install prerequisites: 
 
 ```
-pip3 install requests spacy
+pip3 install requests spacy beautifulsoup4 lxml && python -m spacy download de_core_news_sm
 ```
 
 # Creating a LM resource from the German Wikipedia
 
-Find the newest dewiki dump from https://dumps.wikimedia.org/backup-index.html
+Find the newest Wikipedia dumps at https://dumps.wikimedia.org/backup-index.html.
+We use the dewiki dumps: https://dumps.wikimedia.org/dewiki/
 
 For example: https://dumps.wikimedia.org/dewiki/20200520/
 
 Download the pages-articles-multistream file:
-
+```
 wget https://dumps.wikimedia.org/dewiki/20200520/dewiki-20200520-pages-articles-multistream.xml.bz2
-
-Clone the wikiextractor package:
-
-git clone https://github.com/attardi/wikiextractor
+```
+Download the wikiextractor package (Due to problems with the repository we can't clone it):
+```
+wget https://github.com/attardi/wikiextractor/archive/f8282ab41090f94b7dfd17ce58a985f537db6c21.zip
+unzip -j f8282ab41090f94b7dfd17ce58a985f537db6c21.zip wikiextractor
 mkdir wikiextractor_output/
 mkdir norm/
-
-Now use the wikiextractor to store the output as compressed bz files in the norm/ folder. Splitting into multiple files is recommended so that you can use multiple cores for the following step, use the --bytes flag to set a filesize for the output. Also in the example we use 28 processes:
+```
+Now use the wikiextractor to store the output as compressed bz files in the `norm/` folder. Splitting into multiple files is recommended so that you can use multiple cores for the following step, use the `--bytes` flag to set a filesize for the output. Also in the example we use 28 processes:
 
 ```
 cd wikiextractor
 python3 WikiExtractor.py -o ../wikiextractor_output/ --processes 28 --filter_disambig_pages --min_text_length 0 --compress --bytes 64M --ignored_tags abbr,b,big --no_templates ../dewiki-20200520-pages-articles-multistream.xml.bz2
 ```
 
-Then use convert_wiki_norm.sh to normalize these files in parallel (check that the number of output file matches the number in the script). This step will remove punctuation and translates numerals into text form ("42" -> zwei und vierzig), expands abbreviations and do other normalizations specific to wiki texts. This step needs the spacy Python library with the German spacy model downloaded and installed.
+Then use `convert_wiki_norm.sh` to normalize these files in parallel (check that the number of output file matches the number in the script). This step will remove punctuation and translates numerals into text form ("42" -> zwei und vierzig), expands abbreviations and do other normalizations specific to wiki texts. This step needs the spacy Python library with the German spacy model downloaded and installed.
 
 ```
+cd ..
 ./convert_wiki_norm.sh
 ```
 
-This will put the normalized files in the norm/ folder. You can then simply concatenate all files to a single file with 
+This will put the normalized files in the `norm/` folder. You can then simply concatenate all files to a single file with 
 
 ```
 cat norm/*.txt > de_wiki
@@ -45,7 +48,7 @@ cat norm/*.txt > de_wiki
 
 # Crawling taggesschau news
 
-First, configure output_file and compteted_dates_file in get_texts_taggesschau.py
+First, configure `output_file` and `compteted_dates_file` in `get_texts_taggesschau.py`
 
 ```
 output_file = 'tagesschau_news_may19_may20.txt'
@@ -58,30 +61,33 @@ Now run the crawler:
 python3 get_texts_taggesschau.py
 ```
 
-The output file will contain the news texts and the log file will log success/fail for individual days of the archive. It is normal that some links can't be retrieved and this can be safetly ignored as long as the majority of files can be downlooaded. The tagesschau news archive stores old news up to 365 days.
+The output file will contain the news texts and the log file will log success/fail for individual days of the archive. It is normal that some links can't be retrieved and this can be safetly ignored as long as the majority of files can be downloaded. The tagesschau news archive stores old news up to 365 days.
 
-Now filter some utterances that are not needed in LM modelling with a reverse grep:
+Now filter some utterances that are not needed in LM modelling with a reverse `grep`:
 
 ```
 grep -v "^Stand: " tagesschau_news_may19_may20.txt | grep -v "^Quelle:" > tagesschau_news_may19_may20_filt.txt
 ```
 
-You can now use the wikipedia cleanup script on the Tagesschau news data as well (it only takes compressed bzip2 as input, so compress with bzip2 first):
+You can now use the wikipedia cleanup script on the Tagesschau news data as well (it only takes compressed bzip2 as input, so compress with `bzip2` first):
 
 ```
 bzip2 tagesschau_news_may19_may20_filt.txt
 python3 normalize_wiki_sentences.py tagesschau_news_may19_may20_filt.txt.bz2 tagesschau_news
 ```
 
-You now have the cleaned tagesschau_news text for LM training, with news from the past 365 days.
+You now have the cleaned `tagesschau_news` text for LM training, with news from the past 365 days.
 
 # Crawling Mediathek subtitles
 
-First run ./download_public_German_TV_subtitles.sh
+First run 
+```
+./download_public_German_TV_subtitles.sh
+```
 
 This will probe Mediathek servers for subtitles IDs. The default range will work well, but you might need to tweak the values if you want to download the newest subtitles.
 
-This stores a bunch of subtitle XML files in mediathek_subs/
+This stores a bunch of subtitle XML files in `mediathek_subs/`
 
 Now you need to extract the raw text from these subtitle files with: 
 
@@ -89,7 +95,7 @@ Now you need to extract the raw text from these subtitle files with:
 python3 extract_mediathek_text.py
 ```
 
-You should check if everything went well by inspecting the output file: raw_text_subs3
+You should check if everything went well by inspecting the output file: `raw_text_subs3`
 
 Now you can a two staged normalization:
 
@@ -99,7 +105,7 @@ Filter some subtitle utterances that don't make sense for language modeling, thi
 python3 normalize_subs.py
 ```
 
-This should create a file named "raw_subs_norm_text", with the filtered output. 
+This should create a file named `raw_subs_norm_text` with the filtered output. 
 
 Now we do a few more normalizations that are specific to ASR, such as translate numerals into text form ("42" -> zwei und vierzig), remove all punctuation and recapitalizing the first word in a sentence ("Das Haus ist grün" -> "das Haus ist grün").
 
@@ -109,9 +115,9 @@ This step needs the spacy Python library installed with German models for part o
 python3 normalize_subs_sentences.py raw_subs_norm_text subs_norm1
 ```
 
-Since the above takes a long time to finish, you can also use the unix tool "split" to split raw_subs_norm_text into N files and then use the ./convert_subs_norm.sh script to normalize in parallel across N cores.
+Since the above takes a long time to finish, you can also use the unix tool `split` to split `raw_subs_norm_text` into N files and then use the `./convert_subs_norm.sh` script to normalize in parallel across N cores.
 
-This will take the "raw_subs_norm_text" as input file and output the filtered text into "subs_norm1"
+This will take the `raw_subs_norm_text` as input file and output the filtered text into `subs_norm1`
 
 # Normalized Europarl
 
@@ -142,7 +148,7 @@ cat europarl_norm/europarl_split/* > europarl_norm
 
 # Create the vocabulary file
 
-Now we use the statistics script to create the vocabulary file. Edit the variable "file"s and "output_voc" of statistics.py to suit your needs. Then run:
+Now we use the statistics script to create the vocabulary file. Edit the variable `files` and `output_voc` of `statistics.py` to suit your needs. Then run:
 
 ```
 python3 statistics.py
@@ -181,13 +187,13 @@ out_file = "subs_norm1_filt"
 vocabulary = "voc_600k.txt"
 ```
 
-This makes use of the vocabulary file generated in the above step. Now run final_subs_filter.py:
+This makes use of the vocabulary file generated in the above step. Now run `final_subs_filter.py`:
 
 ```
 python3 final_subs_filter.py
 ```
 
-This will create the "subs_norm1_filt" output file.
+This will create the `subs_norm1_filt` output file.
 
 # Size of all cleaned sentences
 
