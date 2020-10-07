@@ -1,18 +1,19 @@
 from collections import defaultdict
-
+import argparse
 voc = defaultdict(int)
 linenum = 0
 
-output_voc = "voc_subs.txt"
-files = ["subs_norm1_filt", "de_wiki", "europarl", "tagesschau_news"] #,"subs_norm1"]
-#num_range = 45
+parser = argparse.ArgumentParser()
+parser.add_argument('-f', '--files', action='append', nargs='*')
+parser.add_argument('-o', '--output', required=True)
+args = parser.parse_args()
+files = args.files[0]
+output_voc = args.output
 
-#files = ["train_text.txt"]
-output_voc = "new_complete_voc.txt"
-
-#output_voc = "voc_output.txt"
-#filename_mask = "IT_Ethik_deep_learning_text_normalized"
-#num_range = 1
+# num_range = 45
+# files = ["train_text.txt"]
+# filename_mask = "IT_Ethik_deep_learning_text_normalized"
+# num_range = 1
 
 for filename in files:
 
