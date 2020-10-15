@@ -5,7 +5,7 @@ This repository contains a couple of Python scripts that you can use to build re
 Install prerequisites: 
 
 ```
-pip3 install requests spacy beautifulsoup4 lxml && python -m spacy download de_core_news_sm
+pip3 install requests spacy beautifulsoup4 lxml && python -m spacy download de
 ```
 
 # Creating a LM resource from the German Wikipedia
@@ -22,7 +22,7 @@ wget https://dumps.wikimedia.org/dewiki/20200520/dewiki-20200520-pages-articles-
 Download the wikiextractor package (Due to problems with the repository we can't clone it):
 ```
 wget https://github.com/attardi/wikiextractor/archive/f8282ab41090f94b7dfd17ce58a985f537db6c21.zip
-unzip -j f8282ab41090f94b7dfd17ce58a985f537db6c21.zip wikiextractor
+unzip -j f8282ab41090f94b7dfd17ce58a985f537db6c21.zip -d wikiextractor
 mkdir wikiextractor_output/
 mkdir norm/
 ```
@@ -30,7 +30,7 @@ Now use the wikiextractor to store the output as compressed bz files in the `nor
 
 ```
 cd wikiextractor
-python3 WikiExtractor.py -o ../wikiextractor_output/ --processes 28 --filter_disambig_pages --min_text_length 0 --compress --bytes 64M --ignored_tags abbr,b,big --no_templates ../dewiki-20200520-pages-articles-multistream.xml.bz2
+python3 WikiExtractor.py -o ../wikiextractor_output/ --processes 28 --filter_disambig_pages --min_text_length 0 --compress --bytes 64M --ignored_tags abbr,b,big --no_templates -q ../dewiki-20200520-pages-articles-multistream.xml.bz2
 ```
 
 Then use `convert_wiki_norm.sh` to normalize these files in parallel (check that the number of output file matches the number in the script). This step will remove punctuation and translates numerals into text form ("42" -> zwei und vierzig), expands abbreviations and do other normalizations specific to wiki texts. This step needs the spacy Python library with the German spacy model downloaded and installed.
@@ -92,7 +92,7 @@ This stores a bunch of subtitle XML files in `mediathek_subs/`
 Now you need to extract the raw text from these subtitle files with: 
 
 ```
-python3 extract_mediathek_text.py
+python3 extract_mediathek_text.py -d mediathek_subs/ -o raw_text_subs3 -p 28
 ```
 
 You should check if everything went well by inspecting the output file: `raw_text_subs3`
@@ -102,7 +102,7 @@ Now you can a two staged normalization:
 Filter some subtitle utterances that don't make sense for language modeling, this is specific to mediathek subtitle files:
 
 ```
-python3 normalize_subs.py
+python3 normalize_subs.py -f raw_text_subs3 -o raw_subs_norm_text
 ```
 
 This should create a file named `raw_subs_norm_text` with the filtered output. 
@@ -114,10 +114,23 @@ This step needs the spacy Python library installed with German models for part o
 ```
 python3 normalize_subs_sentences.py raw_subs_norm_text subs_norm1
 ```
+This will take the `raw_subs_norm_text` as input file and output the filtered text into `subs_norm1`
 
 Since the above takes a long time to finish, you can also use the unix tool `split` to split `raw_subs_norm_text` into N files and then use the `./convert_subs_norm.sh` script to normalize in parallel across N cores.
 
-This will take the `raw_subs_norm_text` as input file and output the filtered text into `subs_norm1`
+```
+mkdir split
+split -n 28 raw_subs_norm_text split/line
+mkdir norm/split
+./convert_subs_norm.sh
+```
+
+This will put the normalized files in the `norm/split` folder. You can then simply concatenate all files to a single file with
+
+```
+cat norm/split/* > subs_norm1
+```
+
 
 # Normalized Europarl
 
@@ -143,15 +156,16 @@ Now run the normalization:
 And copy the output into a single file:
 
 ```
-cat europarl_norm/europarl_split/* > europarl_norm
+cat europarl_norm/europarl_split/* >> europarl
 ```
 
 # Create the vocabulary file
 
-Now we use the statistics script to create the vocabulary file. Edit the variable `files` and `output_voc` of `statistics.py` to suit your needs. Then run:
+Now we use the statistics script to create the vocabulary file in two steps. Start the `statistics.py` Script with the parameters `-f` for the input files and `-o` for the output file. 
+Edit the variable `files` and `output_voc` of `statistics.py` to suit your needs. Then run:
 
 ```
-python3 statistics.py
+python3 statistics.py -f subs_norm1 de_wiki europarl tagesschau_news -o complete_voc.txt
 ```
 
 This will generate a sorted vocabulary file with the top most used words at the top along with their frequency:
@@ -171,12 +185,6 @@ ein 10661592
 mit 10286659
 ```
 
-To generate a vocabulary file for Kaldi you can use the bash programs cut and head:
-
-```
-cut -d" " -f 1 complete_voc.txt | head -n 600000 > voc_600k.txt 
-```
-
 # Final filtering of mediathek subs
 
 The mediathek subtitles contain a substianial number of English lyrics and songs and other problematic utterances for language modeling ("na na na na na na na na na") that we filter in a final step. First configure
@@ -194,6 +202,20 @@ python3 final_subs_filter.py
 ```
 
 This will create the `subs_norm1_filt` output file.
+
+After this step we run the `statistics.py` Script a second time
+
+```
+python3 statistics.py -f subs_norm1_filt de_wiki europarl tagesschau_news -o complete_voc.txt
+```
+
+# Generate Kaldi vocabulary
+
+To generate a vocabulary file for Kaldi you can use the bash programs cut and head:
+
+```
+cut -d" " -f 1 complete_voc.txt | head -n 600000 > voc_600k.txt 
+```
 
 # Size of all cleaned sentences
 

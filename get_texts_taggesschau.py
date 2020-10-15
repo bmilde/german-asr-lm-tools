@@ -9,13 +9,13 @@ base_url =  "https://www.tagesschau.de/"
 link = "https://www.tagesschau.de/archiv/meldungsarchiv100~_date-<date>.html"
 
 output_file = 'tagesschau_news_may19_may20.txt'
-compteted_dates_file = 'tagesschau_news_may19_may20_completed.log'
+completed_dates_file = 'tagesschau_news_may19_may20_completed.log'
 
 sleep_time = 1
 
 replace_rules = [('<strong>',''), ('</strong>',''), ('<i>',''), ('</i>',''), ('<em>',''), ('</em>',''), ('<span class="stand">',""), ('<span>',''), ('</span>',''), ('<i>',''), ('</i>','')]
 
-with open(output_file, 'w') as output_f, open(compteted_dates_file, 'w') as completed_f:
+with open(output_file, 'w') as output_f, open(completed_dates_file, 'w') as completed_f:
     got_text = False
     for i in range(1,365):
         print('Sleep '+str(sleep_time)+' seconds...')
