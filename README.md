@@ -92,7 +92,7 @@ This stores a bunch of subtitle XML files in `mediathek_subs/`
 Now you need to extract the raw text from these subtitle files with: 
 
 ```
-python3 extract_mediathek_text.py
+python3 extract_mediathek_text.py -d mediathek_subs/ -o raw_text_subs3 -p 28
 ```
 
 You should check if everything went well by inspecting the output file: `raw_text_subs3`
@@ -102,7 +102,7 @@ Now you can a two staged normalization:
 Filter some subtitle utterances that don't make sense for language modeling, this is specific to mediathek subtitle files:
 
 ```
-python3 normalize_subs.py
+python3 normalize_subs.py -f raw_text_subs3 -o raw_subs_norm_text
 ```
 
 This should create a file named `raw_subs_norm_text` with the filtered output. 

@@ -1,7 +1,12 @@
 #import normalisierung
+import argparse
 
-input_file="raw_text_subs3"
-output_file="raw_subs_norm_text"
+parser = argparse.ArgumentParser()
+parser.add_argument('-f', '--file', required=True)
+parser.add_argument('-o', '--output', required=True)
+args = parser.parse_args()
+input_file = args.file
+output_file = args.output
 
 sent_write = True
 
