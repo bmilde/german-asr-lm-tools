@@ -5,7 +5,7 @@ This repository contains a couple of Python scripts that you can use to build re
 Install prerequisites: 
 
 ```
-pip3 install requests spacy beautifulsoup4 lxml && python -m spacy download de
+pip3 install requests spacy beautifulsoup4 lxml && python -m spacy download de_core_news_sm
 ```
 
 # Creating a LM resource from the German Wikipedia
