@@ -1,7 +1,7 @@
 import normalize_sentences
 import spacy
 
-nlp = spacy.load('de')
+nlp = spacy.load('de_core_news_sm')
 
 test_sentence = 'Der schlaue Fuchs sagte "Treffen um 16:20 Uhr!" aber war schon 20 Minuten früher da. Im Jahre 1995 schuf er das Gedicht.'
 
