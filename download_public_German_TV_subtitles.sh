@@ -6,6 +6,6 @@ cd mediathek_subs/
 for i in {53001..600000}
 do
 	echo "trying $i"
-	echo "wget https://classic.ardmediathek.de/subtitle/$i"
-	wget https://classic.ardmediathek.de/subtitle/$i
+	echo "wget -nc --max-redirect 0 https://classic.ardmediathek.de/subtitle/$i"
+	wget -nc --max-redirect 0 https://classic.ardmediathek.de/subtitle/$i
 done
