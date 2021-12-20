@@ -17,7 +17,7 @@ filename_out = args.output
 processes = args.processes
 
 def extract_from_xmlfile(filename):
-    with open(filename, encoding='latin1') as infile:
+    with open(filename, encoding='utf-8') as infile:
         text = infile.read()
 
     if text.startswith('<!DOCTYPE html>'):
