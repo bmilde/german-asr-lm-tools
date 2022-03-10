@@ -1,1 +1,8 @@
 .vscode
+__pycache__/
+mediathek_subs/
+env/
+europarl*/
+norm/
+split/
+wikiextractor*/

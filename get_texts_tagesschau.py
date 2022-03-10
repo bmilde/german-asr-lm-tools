@@ -8,8 +8,8 @@ base_url =  "https://www.tagesschau.de/"
 
 link = "https://www.tagesschau.de/archiv/meldungsarchiv100~_date-<date>.html"
 
-output_file = 'tagesschau_news_may19_may20.txt'
-completed_dates_file = 'tagesschau_news_may19_may20_completed.log'
+output_file = 'tagesschau_news_dez20_dez21.txt'
+completed_dates_file = 'tagesschau_news_dez20_dez21_completed.log'
 
 sleep_time = 1
 

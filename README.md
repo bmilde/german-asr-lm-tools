@@ -46,7 +46,7 @@ This will put the normalized files in the `norm/` folder. You can then simply co
 cat norm/*.txt > de_wiki
 ```
 
-# Crawling taggesschau news
+# Crawling tagesschau news
 
 First, configure `output_file` and `compteted_dates_file` in `get_texts_taggesschau.py`
 
@@ -58,7 +58,7 @@ compteted_dates_file = 'tagesschau_news_may19_may20_completed.log'
 Now run the crawler:
 
 ```
-python3 get_texts_taggesschau.py
+python3 get_texts_tagesschau.py
 ```
 
 The output file will contain the news texts and the log file will log success/fail for individual days of the archive. It is normal that some links can't be retrieved and this can be safetly ignored as long as the majority of files can be downloaded. The tagesschau news archive stores old news up to 365 days.
