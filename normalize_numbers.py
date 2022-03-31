@@ -22,15 +22,26 @@ def num2text_lower(str_num):
     return num2text(str_num).replace(' ','').lower()
 
 class NumberFormatter:    
-    def __init__(self, min_num=7, max_num=100000, with_centuries=True, debug_prints=False):
+    def __init__(self, min_num=7, max_num=100000, max_case_num=10000, with_centuries=True, debug_prints=False):
         self.numbers = {}
 
-        for num in range(min_num, max_num):
+        for num in range(1, max_num):
             str_num = str(num)
             num_text = num2text_lower(str_num)
-            self.numbers[num_text] = num
+            if num >= min_num:
+                self.numbers[num_text] = str_num
             if debug_prints:
                 print(num_text)
+            if num < 20:
+                self.numbers[num_text+'te'] = str_num + '.'
+                self.numbers[num_text+'ten'] = str_num + '.'
+                self.numbers[num_text+'ter'] = str_num + '.'
+                self.numbers[num_text+'tem'] = str_num + '.'
+            elif num >= 20 and num <= max_case_num:
+                self.numbers[num_text+'ste'] = str_num + '.'
+                self.numbers[num_text+'sten'] = str_num + '.'
+                self.numbers[num_text+'ster'] = str_num + '.'
+                self.numbers[num_text+'stem'] = str_num + '.'
 
         if with_centuries:
             for century in range(12,20):
@@ -92,4 +103,9 @@ if __name__ == '__main__':
     test = nf.normalize_text("er ist drei und sechzig".split())
     print(test)
     test = nf.normalize_text("neun zehn hundert neun und neunzig".split())
+    print(test)
+    test = nf.normalize_text("am zwei und zwanzigsten Mai neun zehn hundert neun und neunzig".split())
+    print(test)
+
+    test = nf.normalize_text("am sechsten Mai neun zehn hundert neun und neunzig".split())
     print(test)
