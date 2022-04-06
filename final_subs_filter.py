@@ -7,7 +7,7 @@ vocabulary = "voc_600k.txt"
 remove_repetitions = ["la la la la", "na na na na", "hei hei hei hei", "oh-oh-oh", "♪", "♯",
                       "oh oh oh oh", "quak quak quak quak", "gack gack gack gack",
                       "nein nein nein nein", "ja ja ja ja", "da da da da", 
-                      "O O O O", "mann mann mann mann", "ui ui ui ui",
+                      "o o o o", "mann mann mann mann", "ui ui ui ui",
                       "bäh bäh bäh bäh", "komm komm komm komm", "ha ha ha ha", 
                       "ei ei ei ei", "nee nee nee nee", "weiter weiter weiter weiter",
                       "hey hey hey hey", "ba ba ba ba", "no no no no", "bitte bitte bitte bitte", 
@@ -17,9 +17,12 @@ remove_repetitions = ["la la la la", "na na na na", "hei hei hei hei", "oh-oh-oh
                       "miez miez miez miez", "jude jude jude jude", "krok krok krok krok",
                       "jo jo jo jo", "put put put put", "ta ta ta ta", "— — — —", "� � � �",
                       "bam bam bam bam", "go go go go", "so so so so", "was was was was",
-                      "bum bum bum bum", "U U U U", "ich ich ich ich", 
-                      "oi oi oi oi", "uh uh uh uh", "au au au au", "hi hi hi hi", "hm hm hm hm",
-                      "di di di di", "bumm bumm bumm bumm"]
+                      "bum bum bum bum", "u u u u", "ich ich ich ich", "hm hm hm hm",
+                      "oi oi oi oi", "uh uh uh uh", "au au au au", "hi hi hi hi", 
+                      "di di di di", "bumm bumm bumm bumm", "☆ ☆ ☆ ☆", "★ ★ ★ ★",
+                      "là là là là", "pam pam pam pam", "b b b b", "o-wim-o-weh o-wim-o-weh o-wim-o-weh o-wim-o-weh",
+                      "eh eh eh eh", "nä nä nä nä", "nö nö nö nö", "a a a a", "c c c c",
+                      "ah ah ah ah", "hr hr hr hr", "zu zu zu zu"]
                                                                            
 dictionary_filter_score = True
 voc = {}
