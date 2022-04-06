@@ -4,7 +4,7 @@ filter_file = "subs_norm1"
 out_file = "subs_norm1_filt"
 vocabulary = "voc_600k.txt"
 
-remove_repetitions = ["la la la la", "na na na na", "hei hei hei hei", "oh-oh-oh", "♪", 
+remove_repetitions = ["la la la la", "na na na na", "hei hei hei hei", "oh-oh-oh", "♪", "♯",
                       "oh oh oh oh", "quak quak quak quak", "gack gack gack gack",
                       "nein nein nein nein", "ja ja ja ja", "da da da da", 
                       "O O O O", "mann mann mann mann", "ui ui ui ui",
