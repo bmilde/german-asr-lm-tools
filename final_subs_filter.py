@@ -21,8 +21,9 @@ remove_repetitions = ["la la la la", "na na na na", "hei hei hei hei", "oh-oh-oh
                       "oi oi oi oi", "uh uh uh uh", "au au au au", "hi hi hi hi", 
                       "di di di di", "bumm bumm bumm bumm", "☆ ☆ ☆ ☆", "★ ★ ★ ★",
                       "là là là là", "pam pam pam pam", "b b b b", "o-wim-o-weh o-wim-o-weh o-wim-o-weh o-wim-o-weh",
-                      "eh eh eh eh", "nä nä nä nä", "nö nö nö nö", "a a a a", "c c c c",
-                      "ah ah ah ah", "hr hr hr hr", "zu zu zu zu"]
+                      "eh eh eh eh", "nä nä nä nä", "nö nö nö nö", "a a a a", "c c c c", "th th th th",
+                      "ah ah ah ah", "hr hr hr hr", "zu zu zu zu", "ma ma ma ma", "ne ne ne ne", 
+                      "sch sch sch sch", "tak tak tak tak", "pa pa pa pa", "⁄ ⁄ ⁄ ⁄"]
                                                                            
 dictionary_filter_score = True
 voc = {}
