@@ -97,7 +97,7 @@ python3 extract_mediathek_text.py -d mediathek_subs/ -o raw_text_subs3 -p 28
 
 You should check if everything went well by inspecting the output file: `raw_text_subs3`
 
-Now you can a two staged normalization:
+Now you can do a two staged normalization:
 
 Filter some subtitle utterances that don't make sense for language modeling, this is specific to mediathek subtitle files:
 
@@ -187,7 +187,7 @@ mit 10286659
 
 # Final filtering of mediathek subs
 
-The mediathek subtitles contain a substianial number of English lyrics and songs and other problematic utterances for language modeling ("na na na na na na na na na") that we filter in a final step. First configure
+The mediathek subtitles contain a substianial number of English lyrics and songs and other problematic utterances for language modeling like "na na na na na na na na na" that we filter in a final step. First configure
 
 ```
 filter_file = "subs_norm1"
