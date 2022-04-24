@@ -214,7 +214,7 @@ python3 statistics.py -f subs_norm1_filt de_wiki europarl tagesschau_news -o com
 To generate a vocabulary file for Kaldi you can use the bash programs cut and head:
 
 ```
-cut -d" " -f 1 complete_voc.txt | head -n 600000 > voc_600k.txt 
+cut -d" " -f 1 complete_voc.txt | head -n 800000 > voc_800k.txt 
 ```
 
 # Size of all cleaned sentences
