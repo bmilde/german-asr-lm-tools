@@ -1,4 +1,4 @@
-# german-asr-lm-tools
+# German-asr-lm-tools
 
 This repository contains a couple of Python scripts that you can use to build resources for language modeling for German. Primary target is training a LM for ASR, see e.g. https://github.com/uhh-lt/kaldi-tuda-de/
 
