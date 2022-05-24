@@ -1,8 +1,11 @@
 .vscode
 __pycache__/
 mediathek_subs/
-env/
+env*/
 europarl*/
 norm/
 split/
 wikiextractor*/
+*.gz
+*.txt
+*.log

@@ -156,7 +156,7 @@ Now run the normalization:
 And copy the output into a single file:
 
 ```
-cat europarl_norm/europarl_split/* >> europarl
+cat europarl_norm/europarl_split/* > europarl
 ```
 
 # Create the vocabulary file
