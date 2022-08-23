@@ -41,7 +41,7 @@ filename_out = str(sys.argv[2])
 
 min_token_len = 1
 
-satzzeichen = ',.?!:;<>()/\{}#"\'´`‚’‘_→[]-~«»'
+satzzeichen = ',.?!:;<>()/\{}#"\'´`‚’‘_→[]~«»&+^|'
 
 exclude_zeichen = '*/=→[]."'
 
@@ -52,105 +52,104 @@ lines_dropped = 0
 
 with bzopen(filename) as bzin, open(filename_out, 'w') as txt_out:
     for line in bzin:
+        line = line.decode('utf-8')
+        #if("<doc" in line or "</doc>" in line):
+        #    continue
         try:
-            line = line.decode('utf-8')
-    #        print(line)
-            #if("<doc" in line or "</doc>" in line):
-            #    continue
-            try:
-                line_json = json.loads(line)
+            line_json = json.loads(line)
 
-                text = line_json['text'] #.replace('\n','')
-            except:
-                text = line
-
-            for a in exclude_sonstiges:
-                text = text.replace(a, ' ')
-
-            if resplit_whitespace:
-                text = ' '.join(text.split())
-
-            text = text.replace('   ', ' ').replace('  ', ' ')
-
-            if disable_pipeline:
-                text_sentences = nlp(text, disable=["tagger", "parser", "ner", "lemmatizer", "tokenizer"])        
-            else:
-                text_sentences = nlp(text)
-
-            for sentence in text_sentences.sents:
-                normalized_sentence = normalisierung.text_normalization(sentence.text, tries=12)
-                
-                if "<nowiki>" in line:
-                    lines_dropped += 1
-                    continue
-
-                #if disable_pipeline:
-                #    text_tokens = nlp(normalized_sentence, disable=["parser", "sentencizer", "lemmatizer"])
-                #else:
-                #    text_tokens = nlp(normalized_sentence)
-
-                text_tokens = nlp(normalized_sentence, disable=["parser", "sentencizer", "lemmatizer"])
-
-                # NE PROPN       proper noun
-                # NNE PROPN       proper noun
-                # NN  NOUN        noun, singular or mass
-                
-                lower_case_first = False
-
-             #   print(text_tokens[0].tag_)
-
-                if len(text_tokens) == 0:
-                    lines_dropped += 1
-                    continue
-
-                try:
-                    if text_tokens[0].tag_ not in ["NE", "NNE", "NN"]:
-                        lower_case_first = True
-                except:
-                    print("Warning could not retrieve tag!")
-
-                if filter_satzzeichen:
-                    tokens = [token.text for token in text_tokens if token.text not in satzzeichen] #if (token.text != '\n' and token.text != ' ')]
-                    tokens = [token[:-1] if token[-1] == '-' else token for token in tokens]
-                    tokens = [token[1:] if token[0] == '-' else token for token in tokens]
-                else:
-                    tokens = [token.text for token in text_tokens]
-
-                if len(tokens) < min_token_len:
-                    lines_dropped += 1
-                    continue
-
-                rejoined_text = ' '.join(tokens).strip()
-
-                if filter_exclude_zeichen and any(character in exclude_zeichen for character in rejoined_text):
-                    lines_dropped += 1
-                    continue
-
-                while '  ' in rejoined_text:
-                    rejoined_text = rejoined_text.replace('  ',' ')
-                
-                if rejoined_text == '':
-                    lines_dropped += 1
-                    continue
-
-                if lower_case_first:
-                    rejoined_text = rejoined_text[0].lower() + rejoined_text[1:]
-
-                if sen_num % 1000 == 0:
-                    print("At sentence:", sen_num)
-                    print(tokens)
-
-                if rejoined_text != '' and rejoined_text != ' ' and ('.' not in rejoined_text or not filter_satzzeichen):
-                    txt_out.write(rejoined_text.replace(' \n','\n').replace('\n ','\n') + '\n')
-
-                sen_num += 1
-
-                #print(normalized_sentence)
-                #nlp(normalized_sentence)
-                #tokens = [word.text for word in sentence]
-                #print(tokens)
+            text = line_json['text'] #.replace('\n','')
         except:
-            print("Error, skipping line")
+            text = line
+
+        for a in exclude_sonstiges:
+            text = text.replace(a, ' ')
+
+        if resplit_whitespace:
+            text = ' '.join(text.split())
+
+        text = text.replace('   ', ' ').replace('  ', ' ')
+
+        if disable_pipeline:
+            text_sentences = nlp(text, disable=["tagger", "parser", "ner", "lemmatizer", "tokenizer"])        
+        else:
+            text_sentences = nlp(text)
+
+        for sentence in text_sentences.sents:
+            normalized_sentence = normalisierung.text_normalization(sentence.text, tries=12)
+            
+            if "<nowiki>" in line:
+                lines_dropped += 1
+                continue
+
+            #if disable_pipeline:
+            #    text_tokens = nlp(normalized_sentence, disable=["parser", "sentencizer", "lemmatizer"])
+            #else:
+            #    text_tokens = nlp(normalized_sentence)
+
+            text_tokens = nlp(normalized_sentence, disable=["parser", "sentencizer", "lemmatizer"])
+
+            # NE PROPN        proper noun
+            # NNE PROPN       proper noun
+            # NN  NOUN        noun, singular or mass
+
+            lower_case_first = False
+
+            #   print(text_tokens[0].tag_)
+
+            if len(text_tokens) == 0:
+                lines_dropped += 1
+                continue
+
+            try:
+                if text_tokens[0].tag_ not in ["NE", "NNE", "NN"]:
+                    lower_case_first = True
+            except:
+                print("Warning could not retrieve tag!")
+            if filter_satzzeichen:
+                tokens = [token.text for token in text_tokens if token.text not in satzzeichen] #if (token.text != '\n' and token.text != ' ')]
+                tokens = [token[:-1] if token and (token[-1] == '-') else token for token in tokens]
+                tokens = [token[1:] if token and (token[0] == '-') else token for token in tokens]
+            else:
+                tokens = [token.text for token in text_tokens]
+
+            if len(tokens) < min_token_len:
+                lines_dropped += 1
+                continue
+
+            rejoined_text = ' '.join(tokens).strip()
+
+            if filter_exclude_zeichen and any(character in exclude_zeichen for character in rejoined_text):
+                lines_dropped += 1
+                continue
+
+            while '  ' in rejoined_text:
+                rejoined_text = rejoined_text.replace('  ',' ')
+
+            if rejoined_text == '':
+                lines_dropped += 1
+                continue
+
+            if lower_case_first:
+                rejoined_text = rejoined_text[0].lower() + rejoined_text[1:]
+
+            if sen_num % 1000 == 0:
+                print("At sentence:", sen_num)
+                print(tokens)
+
+
+            if rejoined_text and not rejoined_text.isspace():
+                if not any(zeichen in rejoined_text for zeichen in satzzeichen):
+                    txt_out.write(rejoined_text.replace(' \n','\n').replace('\n ','\n') + '\n')
+            # if rejoined_text != '' and rejoined_text != ' ' and ('.' not in rejoined_text or not filter_satzzeichen):
+            #     txt_out.write(rejoined_text.replace(' \n','\n').replace('\n ','\n') + '\n')
+
+            sen_num += 1
+
+            #print(normalized_sentence)
+            #nlp(normalized_sentence)
+            #tokens = [word.text for word in sentence]
+            #print(tokens)
 
 print("Finished processing " + str(sen_num) + " sentences.")
 print("Dropped " + str(lines_dropped) + " sentences.")
