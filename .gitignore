@@ -6,6 +6,13 @@ europarl*/
 norm/
 split/
 wikiextractor*/
+*.tgz
 *.gz
 *.txt
 *.log
+europarl*
+raw_subs_norm_text
+raw_text_subs3
+subs_norm1*
+tagesschau_news*
+de_wiki
