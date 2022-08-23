@@ -14,135 +14,170 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 
-import sys
-from bz2 import BZ2File as bzopen
+import multiprocessing as mp
+import math
 
 import spacy
-import json
 import normalisierung
-
-nlp = spacy.load('de_core_news_sm')
 
 disable_pipeline = False
 filter_exlude_zeichen = True
 filter_satzzeichen = True
 resplit_whitespace = True
 
+# spacy config
+nlp = spacy.load('de_core_news_sm')
+
 if disable_pipeline:
     sentencizer = nlp.create_pipe("sentencizer")
     nlp.add_pipe(sentencizer)
 
-if len(sys.argv) != 3:
-    print('first argument must be the filename to process, second the output file')
-
-filename = str(sys.argv[1])
-filename_out = str(sys.argv[2])
-
 min_token_len = 1
 
-satzzeichen = ',.?!:;<>()/\{}#"\'´`‚’‘_→[]-~«»'
+satzzeichen = ',.?!:;<>()/\{}#"\'´`‚’‘_→[]~«»&+^|'
 
 exlude_zeichen = '*/=→[]."'
 
-sen_num = 0
-lines_dropped = 0
+subtitleList = []
 
-with open(filename) as in_file, open(filename_out, 'w') as txt_out:
-
-#with bzopen(filename) as bzin, open(filename_out, 'w') as txt_out:
-    for text in in_file:
-        try:
-            if text[-1] == '\n':
-                text = text[:-1]
-
-            text = text.replace('\t',' ')
-            text = text.replace('\xa0',' ')
-
-            if resplit_whitespace:
-                text = ' '.join(text.split())
-
-            text = text.replace('   ', ' ').replace('  ', ' ')
-
-            #if disable_pipeline:
-            #    text_sentences = nlp(text, disable=["tagger", "parser", "ner", "lemmatizer", "tokenizer"])        
-            #else:
-            #    text_sentences = nlp(text)
-#
- #           for sentence in text_sentences.sents:
-            normalized_sentence = normalisierung.text_normalization(text, tries=12)
-                
-            #    if "<nowiki>" in line:
-            #        lines_dropped += 1
-            #        continue
-
-                #if disable_pipeline:
-                #    text_tokens = nlp(normalized_sentence, disable=["parser", "sentencizer", "lemmatizer"])
-                #else:
-                #    text_tokens = nlp(normalized_sentence)
-
-            text_tokens = nlp(normalized_sentence, disable=["parser", "sentencizer", "lemmatizer"])
-
-            # NE PROPN       proper noun
-            # NNE PROPN       proper noun
-            # NN  NOUN        noun, singular or mass
-            
-            lower_case_first = False
-
-         #   print(text_tokens[0].tag_)
-
-            if len(text_tokens) == 0:
-                lines_dropped += 1
+def readFile(filename):
+    print(f'read File: {filename}')
+    content = []
+    with open(filename, encoding='utf-8') as file:
+        for line in file:
+            if line.isspace():
                 continue
-
-            try:
-                if text_tokens[0].tag_ not in ["NE", "NNE", "NN"]:
-                    lower_case_first = True
-            except:
-                print("Warning could not retrieve tag!")
-
-            if filter_satzzeichen:
-                tokens = [token.text for token in text_tokens if token.text not in satzzeichen] #if (token.text != '\n' and token.text != ' ')]
-                tokens = [token[:-1] if token[-1] == '-' else token for token in tokens]
-                tokens = [token[1:] if token[0] == '-' else token for token in tokens]
             else:
-                tokens = [token.text for token in text_tokens]
+                line = line.split('\n')
+                for sentence in line:
+                    if sentence:
+                        content.append(sentence)
+    return content
 
-            if len(tokens) < min_token_len:
-                lines_dropped += 1
-                continue
+def writeFile(filename_out, text):
+    print(f'write filename {filename_out}')
+    text = ''.join(str(elem) for elem in text)
+    with open(filename_out, 'w') as txt_out:
+        txt_out.write(text)
 
-            rejoined_text = ' '.join(tokens).strip()
+def cleanup(texts):
+    print('start cleanup process')
+    results = []
+    sen_num = 0
+    lines_dropped = 0
+    for text in texts:
+        if text[-1] == '\n':
+            text = text[:-1]
 
-            if filter_exlude_zeichen and any(character in exlude_zeichen for character in rejoined_text):
-                lines_dropped += 1
-                continue
+        text = text.replace('\t',' ')
+        text = text.replace('\xa0',' ')
 
-            while '  ' in rejoined_text:
-                rejoined_text = rejoined_text.replace('  ',' ')
+        if resplit_whitespace:
+            text = ' '.join(text.split())
+
+        text = text.replace('   ', ' ').replace('  ', ' ')
+
+        #if disable_pipeline:
+        #    text_sentences = nlp(text, disable=["tagger", "parser", "ner", "lemmatizer", "tokenizer"])        
+        #else:
+        #    text_sentences = nlp(text)
+        #
+            #for sentence in text_sentences.sents:
+        normalized_sentence = normalisierung.text_normalization(text, tries=12)
             
-            if rejoined_text == '':
-                lines_dropped += 1
-                continue
+            #if disable_pipeline:
+            #    text_tokens = nlp(normalized_sentence, disable=["parser", "sentencizer", "lemmatizer"])
+            #else:
+            #    text_tokens = nlp(normalized_sentence)
 
-            if lower_case_first:
-                rejoined_text = rejoined_text[0].lower() + rejoined_text[1:]
+        text_tokens = nlp(normalized_sentence, disable=["parser", "sentencizer", "lemmatizer"])
 
-            if sen_num % 1000 == 0:
-                print("At sentence:", sen_num)
-                print(tokens)
+        # NE PROPN        proper noun
+        # NNE PROPN       proper noun
+        # NN  NOUN        noun, singular or mass
+        
+        lower_case_first = False
 
-            if rejoined_text != '' and rejoined_text != ' ' and ('.' not in rejoined_text or not filter_satzzeichen):
-                txt_out.write(rejoined_text.replace(' \n','\n').replace('\n ','\n') + '\n')
+        #   print(text_tokens[0].tag_)
 
-            sen_num += 1
+        if len(text_tokens) == 0:
+            lines_dropped += 1
+            continue
 
-                #print(normalized_sentence)
-                #nlp(normalized_sentence)
-                #tokens = [word.text for word in sentence]
-                #print(tokens)
+        try:
+            if text_tokens[0].tag_ not in ["NE", "NNE", "NN"]:
+                lower_case_first = True
         except:
-            print("Error, skipping line")
+            print("Warning could not retrieve tag!")
 
-print("Finished processing " + str(sen_num) + " sentences.")
-print("Dropped " + str(lines_dropped) + " sentences.")
+        if filter_satzzeichen:
+            tokens = [token.text for token in text_tokens if token.text not in satzzeichen] #if (token.text != '\n' and token.text != ' ')]
+            tokens = [token[:-1] if token and (token[-1] == '-') else token for token in tokens]
+            tokens = [token[1:] if token and (token[0] == '-') else token for token in tokens]
+        else:
+            tokens = [token.text for token in text_tokens]
+
+        if len(tokens) < min_token_len:
+            lines_dropped += 1
+            continue
+
+        rejoined_text = ' '.join(tokens).strip()
+
+        if filter_exlude_zeichen and any(character in exlude_zeichen for character in rejoined_text):
+            lines_dropped += 1
+            continue
+
+        while '  ' in rejoined_text:
+            rejoined_text = rejoined_text.replace('  ',' ')
+        
+        if rejoined_text == '':
+            lines_dropped += 1
+            continue
+
+        if lower_case_first:
+            rejoined_text = rejoined_text[0].lower() + rejoined_text[1:]
+
+        if sen_num % 1000 == 0:
+            print("At sentence:", sen_num)
+            print(tokens)
+
+        if rejoined_text and not rejoined_text.isspace():
+            if not any(zeichen in rejoined_text for zeichen in satzzeichen):
+                results.append(rejoined_text.replace(' \n','\n').replace('\n ','\n') + '\n')
+
+        sen_num += 1
+    print("Finished processing " + str(sen_num) + " sentences.")
+    print("Dropped " + str(lines_dropped) + " sentences.")
+    return results
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--file', required=True)
+    parser.add_argument('-o', '--output', required=True)
+    parser.add_argument('-p', '--processes', required=False, default=40, type=int)
+    args = parser.parse_args()
+    input_file = args.file
+    output_file = args.output
+    processes = args.processes
+
+    # read file
+    content = readFile(input_file)
+
+    print(f'split the data in {processes} equal sized chunks')
+    chunksize = math.ceil(len(content) / processes)
+    chunks = [content[i: i+chunksize]
+                for i in range(0,len(content), chunksize)]
+
+    print('start processing')
+    pool = mp.Pool(processes)
+    subtitles = pool.imap(cleanup, chunks)
+
+    # create a list of the results and write it to the file
+    finishList = []
+    for subtitle in subtitles:
+        finishList.extend(subtitle)
+    pool.close()
+    writeFile(output_file, finishList)
+    print('finish')

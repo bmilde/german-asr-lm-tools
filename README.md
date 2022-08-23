@@ -112,9 +112,9 @@ Now we do a few more normalizations that are specific to ASR, such as translate 
 This step needs the spacy Python library installed with German models for part of speech tagging models downloaded. See https://github.com/explosion/spaCy for details.
 
 ```
-python3 normalize_subs_sentences.py raw_subs_norm_text subs_norm1
+python3 normalize_subs_sentences.py -f raw_subs_norm_text -o subs_norm1 -n 40
 ```
-This will take the `raw_subs_norm_text` as input file and output the filtered text into `subs_norm1`
+This will take the `raw_subs_norm_text` as input file and output the filtered text into `subs_norm1` and runs with 40 processes.
 
 Since the above takes a long time to finish, you can also use the unix tool `split` to split `raw_subs_norm_text` into N files and then use the `./convert_subs_norm.sh` script to normalize in parallel across N cores.
 
